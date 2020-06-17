@@ -179,8 +179,8 @@ def captcha(driver):
 
 
 if __name__ == '__main__':
-    user = "18601201376"
-    passwd = "lhl666666"
+    user = ""
+    passwd = ""
     driver = douban_login(user, passwd)
     while True:
         captcha(driver)
