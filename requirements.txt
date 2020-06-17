@@ -1,0 +1,12 @@
+pymongo
+redis==3.0.0
+redis-py-cluster
+Scrapy
+scrapy-redis
+requests
+selenium
+pynput
+opencv-python
+numpy
+
+

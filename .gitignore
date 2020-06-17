@@ -1,0 +1,12 @@
+# Created by .ignore support plugin (hsz.mobi)
+*.jpg
+*.png
+*.json
+.DS_Store
+__pycache__/
+/爬虫代码V3.1/
+/deployment/mongo/data/
+/deployment/redis/data/
+.idea
+!/deployment/mongo/configdb/
+

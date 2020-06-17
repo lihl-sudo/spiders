@@ -1,0 +1,111 @@
+version: "3.7"
+
+x-image:
+  &default-image
+  redis
+x-restart:
+  &default-restart
+  always
+x-command:
+  &default-command
+  redis-server /etc/redis/redis.conf      
+x-netmode:
+  &default-netmode
+  "service:redis1"
+
+services:
+  redis:
+    image: *default-image
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+    - ./deployment/redis/data/6379:/data
+    ports:
+     - "6379:6379"
+    command: redis-server
+    restart: *default-restart
+
+  redis1:
+    image: *default-image
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./deployment/redis/data/7001:/data
+      - ./deployment/redis/conf/7001/redis.conf:/etc/redis/redis.conf
+    ports:
+      - "7001:7001"
+      - "7002:7002"
+      - "7003:7003"
+      - "7004:7004"
+      - "7005:7005"
+      - "7006:7006"
+    command: *default-command
+    restart: *default-restart
+
+  redis2:
+    image: *default-image
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./deployment/redis/data/7002:/data
+      - ./deployment/redis/conf/7002/redis.conf:/etc/redis/redis.conf 
+    command: *default-command 
+    network_mode: *default-netmode
+    restart: *default-restart
+
+  redis3:
+    image: *default-image
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./deployment/redis/data/7003:/data
+      - ./deployment/redis/conf/7003/redis.conf:/etc/redis/redis.conf 
+    command: *default-command 
+    network_mode: *default-netmode
+    restart: *default-restart
+
+  redis4:
+    environment:
+      TZ: Asia/Shanghai
+    image: *default-image
+    volumes:
+      - ./deployment/redis/data/7004:/data
+      - ./deployment/redis/conf/7004/redis.conf:/etc/redis/redis.conf 
+    command: *default-command 
+    network_mode: *default-netmode
+    restart: *default-restart
+
+  redis5:
+    environment:
+      TZ: Asia/Shanghai
+    image: *default-image
+    volumes:
+      - ./deployment/redis/data/7005:/data
+      - ./deployment/redis/conf/7005/redis.conf:/etc/redis/redis.conf 
+    command: *default-command 
+    network_mode: *default-netmode
+    restart: *default-restart
+    
+  redis6:
+    environment:
+      TZ: Asia/Shanghai
+    image: *default-image
+    volumes:
+      - ./deployment/redis/data/7006:/data
+      - ./deployment/redis/conf/7006/redis.conf:/etc/redis/redis.conf 
+      - ./start.sh:/start.sh
+      - ./in.txt:/in.txt
+    command: *default-command 
+    network_mode: *default-netmode
+    restart: *default-restart
+
+  mongo:
+    image: mongo
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./deployment/mongo/data:/data/data
+      - ./deployment/mongo/configdb:/data/configdb
+    ports:
+      - "27017:27017"
+    restart: *default-restart
