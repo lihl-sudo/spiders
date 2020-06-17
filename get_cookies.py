@@ -91,7 +91,7 @@ def get_cookies(driver):
 
 
 if __name__ == '__main__':
-    user = "18601201376"
-    passwd = "lhl666666"
+    user = ""
+    passwd = ""
     driver = vcg_login(user, passwd)
     get_cookies(driver)
