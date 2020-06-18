@@ -176,7 +176,7 @@ def action_captcha(driver):
 
 
 if __name__ == '__main__':
-    user = "18601201376"
-    passwd = "lhl66666"
+    user = ""
+    passwd = ""
     driver = douban_login(user, passwd)
     get_cookies(driver)
