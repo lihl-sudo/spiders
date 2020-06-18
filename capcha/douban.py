@@ -1,4 +1,4 @@
-from get_cookies import *
+from capcha.get_cookies import *
 import requests
 import cv2
 import random
@@ -12,7 +12,7 @@ def douban_login(user, passwd):
     url = 'https://accounts.douban.com/passport/login'
     driver = initial_browser()
     driver.get(url)
-    # driver.maximize_window()
+    driver.maximize_window()
     # iframe = driver.find_element_by_xpath('//*[@id="anony-reg-new"]/div/div[1]/iframe')
     # # 切换到iframe
     # driver.switch_to.frame(iframe)
@@ -21,7 +21,7 @@ def douban_login(user, passwd):
     driver.find_element_by_id('username').send_keys(f'{user}')
     driver.find_element_by_id('password').send_keys(f'{passwd}')
     driver.find_element_by_class_name('btn-account').click()
-    time.sleep(5)
+    time.sleep(3)
     # driver.switch_to.default_content()
     # 切换到iframe
     # driver.switch_to.frame(iframe)
@@ -31,6 +31,13 @@ def douban_login(user, passwd):
     # print(slider_iframe)
     # 切换到iframe
     driver.switch_to.frame(0)
+    while True:
+        action_captcha(driver)
+        time.sleep(3)
+        iframe = driver.find_elements_by_tag_name("iframe")
+        print(iframe)
+        if not iframe:
+            break
     return driver
 
 
@@ -95,57 +102,57 @@ def get_image_offset(background_url, slider_url):
 
 # 采用物理加速度位移相关公式按照先快后慢的人工滑动规律进行轨迹计算，
 # 同时还采用了模拟人滑动超过了缺口位置再滑回至缺口的情况以使轨迹更契合人工滑动轨迹
-def get_track(distance):
-    track = []
-    current = 0
-    mid = distance * 3 / 4
-    t = random.randint(2, 3) / 10
-    v = 90
-    while current < distance:
-        if current < mid:
-            a = 2
-        else:
-            a = -3
-        v0 = v
-        v = v0 + a * t
-        move = v0 * t + 1 / 2 * a * t * t
-        current += move
-        track.append(round(move, 2))
-    return track
-
-
 def get_tracks(distance):
+    distance += 10
     tracks = []
-    # 当前位移
     current = 0
-    # 减速阈值
-    mid = distance * 4 / 5
-    # 计算间隔
-    t = 0.2
-    # 初速度
-    v = 50
+    mid = distance*3/5
+    t = random.randint(2, 3)/10
+    v0 = 0
     while current < distance:
         if current < mid:
-            # 加速度为2
-            a = 2
+            a = 50
         else:
-            # 加速度为-2
-            a = -2
-        v0 = v
-        # 当前速度
-        v = v0 + a * t
-        # 移动距离
-        move = v0 * t + 1 / 2 * a * t * t
-        # 当前位移
+            a = -70
+        v = v0
+        v0 = v+a*t
+        move = v*t+1/2*a*t**2
         current += move
-        # 加入轨迹
-        tracks.append(round(move))
+        tracks.append(round(move, 2))
+    return tracks + [0, -1, -1, -1, -2, -2, -2, -1, -1, 0, 0, 1]
+
+
+def get_captcha_tracks(driver):
+    # 获取背景图和滑块图的url
+    background_image_url = driver.find_element_by_id('slideBkg').get_attribute('src')
+    slider_image_url = driver.find_element_by_id('slideBlock').get_attribute('src')
+    time.sleep(2)
+    # 获取轨迹
+    distance, template = get_image_offset(background_image_url, slider_image_url)
+    print(distance-12)
+    tracks = get_tracks(distance - random.randint(10, 12))
     return tracks
 
 
-def captcha(driver):
-    # 定位到滑块按钮
+def move_captcha(driver):
     WebDriverWait(driver, 5, 0.5).until(ec.presence_of_element_located((By.ID, 'tcaptcha_drag_thumb')))
+    tracks = get_captcha_tracks(driver)
+    print(f"{sum(tracks)}: ", tracks)
+    mouse = Con1()
+    mouse.position = (840, 680)
+    mouse.press(Button.left)
+    for index, i in enumerate(tracks):
+        mouse.move(i, 0)
+        time.sleep(0.03)
+        print(index + 1, i)
+    mouse.release(Button.left)
+    return driver
+
+
+def action_captcha(driver):
+    # 等待加载验证框
+    WebDriverWait(driver, 5, 0.5).until(ec.presence_of_element_located((By.ID, 'tcaptcha_drag_thumb')))
+    # 定位到滑块按钮
     button = driver.find_element_by_id('tcaptcha_drag_thumb')
     # 拖动操作用到ActionChains类，实例化
     action = ActionChains(driver)
@@ -153,20 +160,10 @@ def captcha(driver):
     action.click_and_hold(button).perform()
     # 清除之前的action
     action.reset_actions()
-    # 获取轨迹
-    # 获取背景图和滑块图的url
-    background_image_url = driver.find_element_by_id('slideBkg').get_attribute('src')
-    slider_image_url = driver.find_element_by_id('slideBlock').get_attribute('src')
-    time.sleep(3)
-    distance, template = get_image_offset(background_image_url, slider_image_url)
-    track = get_track(distance - random.randint(11, 12))
-    print(track)
-    sums = 0
-    for i in track:
-        sums += i
-    print(sums)
+    tracks = get_captcha_tracks(driver)
+    print(f"{sum(tracks)}: ", tracks)
     try:
-        for index, i in enumerate(track):
+        for index, i in enumerate(tracks):
             action.move_by_offset(xoffset=i, yoffset=0).perform()
             action = ActionChains(driver)
             print(index + 1, i)
@@ -179,14 +176,7 @@ def captcha(driver):
 
 
 if __name__ == '__main__':
-    user = ""
-    passwd = ""
+    user = "18601201376"
+    passwd = "lhl66666"
     driver = douban_login(user, passwd)
-    while True:
-        captcha(driver)
-        # WebDriverWait(driver, 5, 0.5).until(ec.presence_of_element_located((By.CLASS_NAME, 'tcaptcha-cover-text')))
-        text = driver.find_element_by_class_name('tcaptcha-cover-text').text
-        if text != "":
-            print(text)
-            break
     get_cookies(driver)

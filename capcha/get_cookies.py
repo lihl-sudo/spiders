@@ -7,6 +7,9 @@ from selenium.webdriver.support import expected_conditions as ec
 from pynput.keyboard import Key, Controller as Con2
 from pynput.mouse import Button, Controller as Con1
 
+keyboard = Con2()
+mouse = Con1()
+
 
 def initial_browser():
     # 驱动器地址
@@ -40,9 +43,16 @@ def initial_browser():
     return driver
 
 
+def move_captcha():
+    time.sleep(3)
+    mouse.position = (1555, 1080 - 680)
+    mouse.press(Button.left)
+    mouse.move(1890 - 1555, 0)
+    mouse.release(Button.left)
+    time.sleep(3)
+
+
 def vcg_login(user, passwd):
-    keyboard = Con2()
-    mouse = Con1()
     url = 'https://www.vcg.com/login'
     driver = initial_browser()
     driver.maximize_window()
@@ -59,15 +69,10 @@ def vcg_login(user, passwd):
     keyboard.press(Key.tab)
     keyboard.type(f"{passwd}")
     keyboard.press(Key.enter)
-    time.sleep(2)
+    time.sleep(1)
     while True:
-        time.sleep(3)
-        mouse.position = (1555, 1080-680)
-        mouse.press(Button.left)
-        mouse.move(1890-1555, 0)
-        mouse.release(Button.left)
-        time.sleep(3)
-        # WebDriverWait(driver, 5, 0.5).until(ec.presence_of_element_located((By.CLASS_NAME, 'nc-lang-cnt')))
+        move_captcha()
+        WebDriverWait(driver, 5, 0.5).until(ec.presence_of_element_located((By.CLASS_NAME, 'nc-lang-cnt')))
         if driver.find_element_by_class_name('nc-lang-cnt').text == '验证通过':
             break
     # keyboard.press(Key.enter)
@@ -79,15 +84,15 @@ def vcg_login(user, passwd):
 
 def get_cookies(driver):
     cookies = driver.get_cookies()  # Selenium为我们提供了get_cookies来获取登录cookies
-    cookie = {i["name"]: i["value"] for i in cookies}
+    cookies = {i["name"]: i["value"] for i in cookies}
     driver.close()  # 获取cookies便可以关闭浏览器
     # 然后的关键就是保存cookies，之后请求从文件中读取cookies就可以省去每次都要登录一次的
     # 当然可以把cookies返回回去，但是之后的每次请求都要先执行一次login没有发挥cookies的作用
-    jsonCookies = json.dumps(cookies)  # 通过json将cookies写入文件
-    with open('vcgCookies.json', 'w') as f:
-        f.write(jsonCookies)
-    print(cookie)
-    return cookie
+    # jsonCookies = json.dumps(cookies)  # 通过json将cookies写入文件
+    # with open('vcgCookies.json', 'w') as f:
+    #     f.write(jsonCookies)
+    print(cookies)
+    return cookies
 
 
 if __name__ == '__main__':

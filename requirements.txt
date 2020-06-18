@@ -8,5 +8,8 @@ selenium
 pynput
 opencv-python
 numpy
+pillow
+pytesseract
+BeautifulSoup4
 
 
