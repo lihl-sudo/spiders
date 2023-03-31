@@ -1,5 +1,5 @@
 pymongo
-redis==3.0.0
+redis==4.4.4
 redis-py-cluster
 Scrapy
 scrapy-redis
